@@ -77,7 +77,19 @@ public class Requests
 
     public List<Record> sociallyCareful()
     {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var dbSociallyCareful = "" +
+                "MATCH (s:Person {healthstatus:'Sick'})\n" +
+                "WHERE NOT EXISTS {\n" +
+                "    (s)-[v:VISITS]-(pl:Place{type:'Bar'})\n" +
+                "    WHERE s.confirmedtime > v.starttime\n" +
+                "}\n" +
+                "RETURN s.name as sickName";
+
+        try (var session = driver.session())
+        {
+            var result = session.run(dbSociallyCareful);
+            return result.list();
+        }
     }
 
     public List<Record> peopleToInform()
