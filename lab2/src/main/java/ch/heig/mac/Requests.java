@@ -1,6 +1,8 @@
 package ch.heig.mac;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,13 +32,11 @@ public class Requests
 
     public List<Record> possibleSpreaders()
     {
-        var dbPossibleSpreadersQuery = "MATCH (sp:Person " +
-                "{healthstatus:'Sick'})-[v1:VISITS]->(pl:Place) \n" +
-                "WHERE sp.confirmedtime < v1.starttime AND EXISTS {     \n" +
-                "    (hp:Person {healthstatus:'Healthy'})-[v2:VISITS]-(pl)   " +
-                "  \n" +
-                "    WHERE sp.confirmedtime < v2.starttime } \n" +
-                "RETURN DISTINCT sp.name AS sickName";
+        var dbPossibleSpreadersQuery = "MATCH (sp:Person {healthstatus:'Sick'})-[v1:VISITS]->(pl:Place) \n" +
+                                       "WHERE sp.confirmedtime < v1.starttime AND EXISTS {     \n" +
+                                       "    (hp:Person {healthstatus:'Healthy'})-[v2:VISITS]-(pl)   " +
+                                       "    WHERE sp.confirmedtime < v2.starttime } \n" +
+                                       "RETURN DISTINCT sp.name AS sickName";
 
         try (var session = driver.session())
         {
@@ -47,12 +47,10 @@ public class Requests
 
     public List<Record> possibleSpreadCounts()
     {
-        var dbPossibleSpreadCountsQuery = "" +
-                "MATCH (s:Person {healthstatus:'Sick'})-[v1:VISITS]-" +
-                "(pl:Place)-[v2:VISITS]-(h:Person {healthstatus:'Healthy'})\n" +
-                "WHERE s.confirmedtime < v1.starttime AND s.confirmedtime < " +
-                "v2.starttime\n" +
-                "RETURN s.name as sickName, count(h) as nbHealthy";
+        var dbPossibleSpreadCountsQuery = "MATCH (s:Person {healthstatus:'Sick'})-[v1:VISITS]-" +
+                                          "(pl:Place)-[v2:VISITS]-(h:Person {healthstatus:'Healthy'})\n" +
+                                          "WHERE s.confirmedtime < v1.starttime AND s.confirmedtime <  v2.starttime\n" +
+                                          "RETURN s.name as sickName, count(h) as nbHealthy";
         try (var session = driver.session())
         {
             var result = session.run(dbPossibleSpreadCountsQuery);
@@ -77,7 +75,7 @@ public class Requests
 
     public List<Record> sociallyCareful()
     {
-        var dbSociallyCareful = "" +
+        var dbSociallyCarefulQuery = "" +
                 "MATCH (s:Person {healthstatus:'Sick'})\n" +
                 "WHERE NOT EXISTS {\n" +
                 "    (s)-[v:VISITS]-(pl:Place{type:'Bar'})\n" +
@@ -87,7 +85,7 @@ public class Requests
 
         try (var session = driver.session())
         {
-            var result = session.run(dbSociallyCareful);
+            var result = session.run(dbSociallyCarefulQuery);
             return result.list();
         }
     }
@@ -104,7 +102,20 @@ public class Requests
 
     public List<Record> healthyCompanionsOf(String name)
     {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        Map<String,Object> params = new HashMap<>();
+        params.put( "name", name );
+
+
+        var dbHealthyCompanionOfQuery = "MATCH (tp:Person {name: $name})-[:VISITS*2..6]-(hp:Person {healthstatus: \"Healthy\"})\n" +
+                                        "RETURN DISTINCT hp.name AS healthyName";
+
+
+        try (var session = driver.session())
+        {
+            var result =
+                    session.run(dbHealthyCompanionOfQuery, params);
+            return result.list();
+        }
     }
 
     public Record topSickSite()
