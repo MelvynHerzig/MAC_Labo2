@@ -23,7 +23,16 @@ public class Requests {
     }
 
     public List<Record> possibleSpreaders() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var dbPossibleSpreadersQuery = "MATCH (sp:Person {healthstatus:'Sick'})-[v1:VISITS]->(pl:Place) \n" +
+                                       "WHERE sp.confirmedtime < v1.starttime AND EXISTS {     \n" +
+                                       "    (hp:Person {healthstatus:'Healthy'})-[v2:VISITS]-(pl)     \n" +
+                                       "    WHERE sp.confirmedtime < v2.starttime } \n" +
+                                       "RETURN DISTINCT sp.name AS sickName";
+
+        try (var session = driver.session()) {
+            var result = session.run(dbPossibleSpreadersQuery);
+            return result.list();
+        }
     }
 
     public List<Record> possibleSpreadCounts() {

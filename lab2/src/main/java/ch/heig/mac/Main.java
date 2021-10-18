@@ -6,7 +6,6 @@ import java.util.List;
 
 public class Main {
 
-    // TODO: Configure credentials to allow connection to your Neo4j instance
     public static Driver openConnection() {
         var uri = "neo4j://localhost:7687";
         var username = "neo4j";
