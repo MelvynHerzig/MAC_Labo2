@@ -40,7 +40,14 @@ public class Requests {
     }
 
     public List<Record> carelessPeople() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var dbCarelessPeopleQuery = "MATCH (sp:Person {healthstatus:'Sick'})-[v1:VISITS]-(pl:Place)  \n" +
+                                        "RETURN sp.name AS sickName, count(DISTINCT pl.name) AS nbPlaces\n" +
+                                        "ORDER BY nbPlaces DESC";
+
+        try (var session = driver.session()) {
+            var result = session.run(dbCarelessPeopleQuery);
+            return result.list();
+        }
     }
 
     public List<Record> sociallyCareful() {
