@@ -52,7 +52,7 @@ public class Requests
                 "(pl:Place)-[v2:VISITS]-(h:Person {healthstatus:'Healthy'})\n" +
                 "WHERE s.confirmedtime < v1.starttime AND s.confirmedtime < " +
                 "v2.starttime\n" +
-                "RETURN s.name, count(h)";
+                "RETURN s.name as sickName, count(h) as nbHealthy";
         try (var session = driver.session())
         {
             var result = session.run(dbPossibleSpreadCountsQuery);
