@@ -61,10 +61,9 @@ public class Requests
     public List<Record> carelessPeople()
     {
         var dbCarelessPeopleQuery = "MATCH (sp:Person {healthstatus:'Sick'})" +
-                "-[v1:VISITS]-(pl:Place)  \n" +
-                "RETURN sp.name AS sickName, count(DISTINCT pl.name) AS " +
-                "nbPlaces\n" +
-                "ORDER BY nbPlaces DESC";
+                                    "-[v1:VISITS]-(pl:Place)  \n" +
+                                    "RETURN sp.name AS sickName, count(DISTINCT pl.name) AS nbPlaces\n" +
+                                    "ORDER BY nbPlaces DESC";
 
         try (var session = driver.session())
         {
@@ -75,13 +74,12 @@ public class Requests
 
     public List<Record> sociallyCareful()
     {
-        var dbSociallyCarefulQuery = "" +
-                "MATCH (s:Person {healthstatus:'Sick'})\n" +
-                "WHERE NOT EXISTS {\n" +
-                "    (s)-[v:VISITS]-(pl:Place{type:'Bar'})\n" +
-                "    WHERE s.confirmedtime > v.starttime\n" +
-                "}\n" +
-                "RETURN s.name as sickName";
+        var dbSociallyCarefulQuery = "MATCH (s:Person {healthstatus:'Sick'})\n" +
+                                     "WHERE NOT EXISTS {\n" +
+                                     "    (s)-[v:VISITS]-(pl:Place{type:'Bar'})\n" +
+                                     "    WHERE s.confirmedtime > v.starttime\n" +
+                                     "}\n" +
+                                     "RETURN s.name as sickName";
 
         try (var session = driver.session())
         {
@@ -92,7 +90,15 @@ public class Requests
 
     public List<Record> peopleToInform()
     {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var dbPeopleToInform = "MATCH (sp:Person {healthstatus:'Sick'})-[vsp:VISITS]->(:Place)<-[vhp:VISITS]-(hp:Person {healthstatus:'Healthy'})\n" +
+                               "WHERE (datetime() + duration.between(apoc.coll.max([vsp.starttime, vhp.starttime]), apoc.coll.min([vsp.endtime, vhp.endtime]))) >= (datetime() + duration({hours:2}))\n" +
+                               "RETURN sp.name AS sickName, collect(DISTINCT hp.name) AS peopleToInform";
+
+        try (var session = driver.session())
+        {
+            var result = session.run(dbPeopleToInform);
+            return result.list();
+        }
     }
 
     public List<Record> setHighRisk()
