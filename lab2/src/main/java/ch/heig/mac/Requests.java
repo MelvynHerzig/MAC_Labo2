@@ -33,11 +33,11 @@ public class Requests
     public List<Record> possibleSpreaders()
     {
         var dbPossibleSpreadersQuery = "MATCH (sp:Person " +
-                "{healthstatus:'Sick'})-[v1:VISITS]->(pl:Place) \n" +
-                "WHERE sp.confirmedtime < v1.starttime AND EXISTS {     \n" +
-                "    (hp:Person {healthstatus:'Healthy'})-[v2:VISITS]-(pl)   " +
-                "    WHERE sp.confirmedtime < v2.starttime } \n" +
-                "RETURN DISTINCT sp.name AS sickName";
+                                       "{healthstatus:'Sick'})-[v1:VISITS]->(pl:Place) \n" +
+                                       "WHERE sp.confirmedtime < v1.starttime AND EXISTS {     \n" +
+                                       "    (hp:Person {healthstatus:'Healthy'})-[v2:VISITS]-(pl)   " +
+                                       "    WHERE sp.confirmedtime < v2.starttime } \n" +
+                                       "RETURN DISTINCT sp.name AS sickName";
 
         try (var session = driver.session())
         {
@@ -48,12 +48,9 @@ public class Requests
 
     public List<Record> possibleSpreadCounts()
     {
-        var dbPossibleSpreadCountsQuery = "MATCH (s:Person " +
-                "{healthstatus:'Sick'})-[v1:VISITS]-" +
-                "(pl:Place)-[v2:VISITS]-(h:Person {healthstatus:'Healthy'})\n" +
-                "WHERE s.confirmedtime < v1.starttime AND s.confirmedtime <  " +
-                "v2.starttime\n" +
-                "RETURN s.name as sickName, count(h) as nbHealthy";
+        var dbPossibleSpreadCountsQuery = "MATCH (s:Person {healthstatus:'Sick'})-[v1:VISITS] - (pl:Place)-[v2:VISITS]-(h:Person {healthstatus:'Healthy'})\n" +
+                                          "WHERE s.confirmedtime < v1.starttime AND s.confirmedtime < v2.starttime\n" +
+                                          "RETURN s.name as sickName, count(h) as nbHealthy";
         try (var session = driver.session())
         {
             var result = session.run(dbPossibleSpreadCountsQuery);
@@ -116,8 +113,8 @@ public class Requests
 
 
         var dbHealthyCompanionOfQuery = "MATCH (tp:Person {name: $name})" +
-                "-[:VISITS*2..6]-(hp:Person {healthstatus: \"Healthy\"})\n" +
-                "RETURN DISTINCT hp.name AS healthyName";
+                                        "-[:VISITS*2..6]-(hp:Person {healthstatus: \"Healthy\"})\n" +
+                                        "RETURN DISTINCT hp.name AS healthyName";
 
 
         try (var session = driver.session())
@@ -130,12 +127,11 @@ public class Requests
 
     public Record topSickSite()
     {
-        var dbTopSickSite = "MATCH (p:Person {healthstatus:'Sick'})" +
-                "-[v:VISITS]-(pl:Place)\n" +
-                "WHERE p.confirmedtime < v.starttime\n" +
-                "RETURN pl.type as placeType, COUNT(*) as nbOfSickVisits\n" +
-                "ORDER BY nbOfSickVisits DESC\n" +
-                "LIMIT 1";
+        var dbTopSickSite = "MATCH (p:Person {healthstatus:'Sick'})-[v:VISITS]-(pl:Place)\n" +
+                            "WHERE p.confirmedtime < v.starttime\n" +
+                            "RETURN pl.type as placeType, COUNT(*) as nbOfSickVisits\n" +
+                            "ORDER BY nbOfSickVisits DESC\n" +
+                            "LIMIT 1";
 
         try (var session = driver.session())
         {
