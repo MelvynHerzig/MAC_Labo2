@@ -10,8 +10,7 @@ import org.neo4j.driver.*;
 
 public class Requests
 {
-    private static final Logger LOGGER =
-            Logger.getLogger(Requests.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Requests.class.getName());
     private final Driver driver;
 
     public Requests(Driver driver)
@@ -142,6 +141,17 @@ public class Requests
 
     public List<Record> sickFrom(List<String> names)
     {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        Map<String,Object> params = new HashMap<>();
+        params.put( "names", names );
+
+        var dbSickFrom = "MATCH (p:Person {healthstatus:'Sick'})\n" +
+                         "WHERE p.name IN $names\n" +
+                         "RETURN p.name AS sickName";
+
+        try (var session = driver.session())
+        {
+            var result = session.run(dbSickFrom, params);
+            return result.list();
+        }
     }
 }
