@@ -82,7 +82,7 @@ public class QueryOutputFormatTest {
 
     @Test
     public void testSickFromQuery() {
-        assertThat(requests.sickFrom(List.of("Landyn Greer", "Saniyah Fuller", "Baylee Leblanc")).get(0).keys())
+            assertThat(requests.sickFrom(List.of("Landyn Greer", "Saniyah Fuller", "Baylee Leblanc")).get(0).keys())
                 .hasSameElementsAs(List.of("sickName"));
     }
 }
