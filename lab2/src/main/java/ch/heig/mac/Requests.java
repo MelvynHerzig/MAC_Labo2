@@ -63,11 +63,14 @@ public class Requests
 
     public List<Record> carelessPeople()
     {
-        var dbCarelessPeopleQuery = "MATCH (sp:Person {healthstatus:'Sick'})" +
-                "-[v1:VISITS]-(pl:Place)  \n" +
-                "RETURN sp.name AS sickName, count(DISTINCT pl.name) AS " +
-                "nbPlaces\n" +
-                "ORDER BY nbPlaces DESC";
+        var dbCarelessPeopleQuery =
+                "MATCH (sp:Person {healthstatus:'Sick'})-[v1:VISITS]-" +
+                        "(pl:Place)  \n" +
+                        "WITH sp.name AS sickName, count(DISTINCT pl.name) AS" +
+                        " nbPlaces\n" +
+                        "WHERE nbPlaces > 10\n" +
+                        "RETURN sickName, nbPlaces\n" +
+                        "ORDER BY nbPlaces DESC";
 
         try (var session = driver.session())
         {
